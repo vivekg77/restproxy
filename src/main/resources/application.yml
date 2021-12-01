@@ -1,0 +1,53 @@
+server:
+  port: 8086
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  kafka:
+#    security.protocol: SSL
+#    ssl:
+#      trust-store-location: truststorelocation
+#      trust-store-password: password
+#      key-store-location: keystorelocation
+#      key-store-password: password
+#      key-password: password
+    application.name: comhub-rest-proxy
+    group.id: ${spring.application.name}-group
+    compression.type: snappy
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      acks: all
+      enable.idempotence: true
+      max.in.flight.requests.per.connection: 1
+    consumer:
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+    properties:
+      bootstrap.servers: http://localhost:9092
+      schema.registry.url: http://localhost:8081
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/metroDS
+
+topic:
+  register:
+    request: dev.comhub.private.register.request
+  send:
+    request: dev.comhub.private.send.coms.request
+  preference:
+    request: dev.comhub.private.preference.request
+
+
+logging:
+  #  file.name: ${spring.application.name}.log
+  pattern:
+    console: '%d{MM-dd-yyyy HH:mm:ss} %X{uuid} [%thread] %-4r %-5level %logger{50} - %msg%n'
+  #    file: '%d{MM-dd-yyyy HH:mm:ss} %X{uuid} [%thread] %-4r %-5level %logger{50} - %msg%n'
+  level:
+    root: INFO
+    org.apache.kafka: INFO
+    com.metrobank.communicationhub: DEBUG

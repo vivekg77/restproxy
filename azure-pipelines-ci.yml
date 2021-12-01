@@ -1,0 +1,49 @@
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+name: $(MICROSERVICE_MAJOR_MINOR_VERSION).$(Build.BuildId)
+
+trigger:
+  branches:
+    include:
+      - "*"
+
+resources:
+  repositories:
+  - repository: payments-pipeline-templates
+    type: git
+    name: Payments/pipeline-templates
+    ref: refs/heads/master
+  - repository: acp-pipeline-templates
+    type: git
+    name: "Amaze Cloud Platform/acp-pipeline-templates"
+    ref: refs/heads/master
+  - repository: payments-microservice-deploy
+    type: git
+    name: Payments/payments-microservice-deploy
+    ref: refs/heads/master
+
+variables:
+- name: MICROSERVICE_NAME
+  value: $(System.TeamProject)-$(Build.Repository.Name)
+- name: MICROSERVICE_MAJOR_MINOR_VERSION
+  value: '1.0'
+- name: PUBLISH_BRANCH
+  value: 'refs/heads/main'
+- name: JAR_TARGET_LOCATION
+  value: 'target/*.jar'
+- name: DOCKER_BUILD_LOCATION
+  value: 'src/main/docker'
+- name: PUBLISH_MAVEN_ARTIFACTS
+  value: 'false'
+- group: microservice-build-spec
+- group: AWS-Non-Prod
+- group: AWS-Non-Prod-Secrets
+
+pool:
+  name: $(AGENT_POOL) # from microservice-build-spec variable group
+
+stages:
+
+- template: cicd-template.yml@payments-pipeline-templates
